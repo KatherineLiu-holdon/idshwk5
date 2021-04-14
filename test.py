@@ -48,17 +48,20 @@ def deal_with_traindata(filename):
 
 def deal_with_testdata(filename):
     Testlist = []
+    Domainnamelist=[]
     with open(filename, 'r') as f:
         for sample in f:
+            Domainnamelist.append(sample.rstrip('\n'))
             length = len(sample)
+            en = cal_entropy(sample)
             seg = len(sample.split("."))
             num = 0
             for char in sample:
                 if char.isdigit():
                     num += 1
-            Testlist.append([length, num, seg])
+            Testlist.append([length, num, en, seg])
 
-    return Testlist
+    return Testlist,Domainnamelist
 
 
 featureMatrix, labelList = deal_with_traindata("train.txt")
@@ -66,16 +69,15 @@ featureMatrix, labelList = deal_with_traindata("train.txt")
 clf = RandomForestClassifier(random_state=0)
 clf.fit(featureMatrix, labelList)
 
-testMatrix = deal_with_testdata("test.txt")
+testMatrix ,Domainnamelist= deal_with_testdata("test.txt")
 resultlist = []
 
 with open("result.txt", "w+", newline='') as f:
-    for i in testMatrix:
-        t = clf.predict([i])
+    for i in range(len(testMatrix)):
+        t = clf.predict([testMatrix[i]])
         if t == 0:
-            resultlist.append(i + ',' + 'notdga')
+            resultlist.append(Domainnamelist[i] + ',' + 'notdga')
         elif t == 1:
-            resultlist.append(i + ',' + 'dga')
+            resultlist.append(Domainnamelist[i] + ',' + 'dga')
     for result in resultlist:
-        f.write(result+'\n')
-
+        f.write(result + '\n')
